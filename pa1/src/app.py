@@ -58,6 +58,9 @@ def create_post():
     title = body.get("title")
     link = body.get("link")
     username = body.get("username")
+    if title is None or link is None or username is None:
+        return json.dumps({"error": "Bad Request"}), 400
+
     post_current_id += 1
     post = {
         "id": post_current_id,
@@ -114,6 +117,9 @@ def post_comment(post_id):
     body = json.loads(request.data)
     text = body.get("text")
     username = body.get("username")
+    if text is None or username is None:
+        return json.dumps({"error": "Bad Request"}), 400
+
     comment_current_id += 1
     comment = {
         "id": comment_current_id,
@@ -138,7 +144,10 @@ def edit_comment(post_id, comment_id):
         return json.dumps({"error": "Comment not found"}), 404
 
     body = json.loads(request.data)
-    comment["text"] = body.get("text")
+    text = body.get("text")
+    if text is None:
+        return json.dumps({"error": "Bad Request"}), 400
+    comment["text"] = text
     return json.dumps(comment), 200
 
 if __name__ == "__main__":

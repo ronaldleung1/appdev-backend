@@ -23,7 +23,7 @@ posts = {
     }
 }
 
-post_current_id = len(posts)
+post_current_id = len(posts) - 1
 
 @app.route("/")
 def hello_world():
@@ -52,6 +52,13 @@ def create_post():
     }
     posts[post_current_id] = post
     return json.dumps(post), 201
+
+@app.route("/api/posts/<int:post_id>/", methods=["GET"])
+def get_one_post(post_id):
+    post = posts.get(post_id)
+    if post is None:
+        return json.dumps({"error": "Post not found"}), 404
+    return json.dumps(post), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

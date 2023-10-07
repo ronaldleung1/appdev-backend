@@ -23,18 +23,35 @@ posts = {
     }
 }
 
+post_current_id = len(posts)
+
 @app.route("/")
 def hello_world():
     return "Hello world!"
 
+# your routes here
 @app.route("/api/posts", methods=["GET"])
 def get_posts():
     res = {"posts": list(posts.values())}
     return json.dumps(res), 200
 
-
-# your routes here
-
+@app.route("/api/posts", methods=["POST"])
+def create_post():
+    global post_current_id
+    body = json.loads(request.data)
+    title = body.get("title")
+    link = body.get("link")
+    username = body.get("username")
+    post_current_id += 1
+    post = {
+        "id": post_current_id,
+        "upvotes": 0,
+        "title": title,
+        "link": link,
+        "username": username,
+    }
+    posts[post_current_id] = post
+    return json.dumps(post), 201
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

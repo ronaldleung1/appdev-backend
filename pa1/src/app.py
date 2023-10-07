@@ -1,7 +1,6 @@
 import json
 
 from flask import Flask
-from flask import jsonify
 from flask import request
 
 app = Flask(__name__)
@@ -20,7 +19,7 @@ posts = {
                 "text": "Wow, my first Reddit gold!",
                 "username": "alicia98",
             },
-        }
+        },
     },
     1: {
         "id": 1,
@@ -28,18 +27,19 @@ posts = {
         "title": "Cat loaf",
         "link": "https://i.imgur.com/TJ46wX4.jpg",
         "username": "alicia98",
-        "comments": {}
-    }
+        "comments": {},
+    },
 }
 
 post_current_id = 1
 comment_current_id = 0
 
+
 @app.route("/")
 def hello_world():
     return "Hello world!"
 
-# your routes here
+
 @app.route("/api/posts", methods=["GET"])
 def get_posts():
     """
@@ -47,6 +47,7 @@ def get_posts():
     """
     res = {"posts": list(posts.values())}
     return json.dumps(res), 200
+
 
 @app.route("/api/posts", methods=["POST"])
 def create_post():
@@ -72,6 +73,7 @@ def create_post():
     posts[post_current_id] = post
     return json.dumps(post), 201
 
+
 @app.route("/api/posts/<int:post_id>/", methods=["GET"])
 def get_one_post(post_id):
     """
@@ -81,6 +83,7 @@ def get_one_post(post_id):
     if post is None:
         return json.dumps({"error": "Post not found"}), 404
     return json.dumps(post), 200
+
 
 @app.route("/api/posts/<int:post_id>/", methods=["DELETE"])
 def delete_post(post_id):
@@ -93,6 +96,7 @@ def delete_post(post_id):
     del posts[post_id]
     return json.dumps(post), 200
 
+
 @app.route("/api/posts/<int:post_id>/comments", methods=["GET"])
 def get_comments(post_id):
     """
@@ -104,6 +108,7 @@ def get_comments(post_id):
     res = {"comments": list(post.get("comments").values())}
     return json.dumps(res), 200
 
+
 @app.route("/api/posts/<int:post_id>/comments", methods=["POST"])
 def post_comment(post_id):
     """
@@ -113,7 +118,7 @@ def post_comment(post_id):
     post = posts.get(post_id)
     if post is None:
         return json.dumps({"error": "Post not found"}), 404
-    
+
     body = json.loads(request.data)
     text = body.get("text")
     username = body.get("username")
@@ -130,6 +135,7 @@ def post_comment(post_id):
     post["comments"][comment_current_id] = comment
     return json.dumps(comment), 201
 
+
 @app.route("/api/posts/<int:post_id>/comments/<int:comment_id>", methods=["PUT"])
 def edit_comment(post_id, comment_id):
     """
@@ -138,7 +144,7 @@ def edit_comment(post_id, comment_id):
     post = posts.get(post_id)
     if post is None:
         return json.dumps({"error": "Post not found"}), 404
-    
+
     comment = post.get("comments").get(comment_id)
     if comment is None:
         return json.dumps({"error": "Comment not found"}), 404
@@ -149,6 +155,7 @@ def edit_comment(post_id, comment_id):
         return json.dumps({"error": "Bad Request"}), 400
     comment["text"] = text
     return json.dumps(comment), 200
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

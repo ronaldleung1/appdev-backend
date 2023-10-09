@@ -12,14 +12,6 @@ posts = {
         "title": "My cat is the cutest!",
         "link": "https://i.imgur.com/jseZqNK.jpg",
         "username": "alicia98",
-        "comments": {
-            0: {
-                "id": 0,
-                "upvotes": 8,
-                "text": "Wow, my first Reddit gold!",
-                "username": "alicia98",
-            },
-        },
     },
     1: {
         "id": 1,
@@ -27,12 +19,36 @@ posts = {
         "title": "Cat loaf",
         "link": "https://i.imgur.com/TJ46wX4.jpg",
         "username": "alicia98",
-        "comments": {},
     },
 }
 
+comments = {
+    0: {
+        "id": 0,
+        "post_id": 0,
+        "upvotes": 8,
+        "text": "Wow, my first Reddit gold!",
+        "username": "alicia98",
+    },
+    1: {
+        "id": 1,
+        "post_id": 1,
+        "upvotes": 10,
+        "text": "Wow, my second Reddit gold!",
+        "username": "alicia98",
+    },
+    2: {
+        "id": 2,
+        "post_id": 1,
+        "upvotes": 2,
+        "text": "Wow what a big deal *rolls eyes*",
+        "username": "troll21",
+    },
+}
+
+
 post_current_id = 1
-comment_current_id = 0
+comment_current_id = 2
 
 
 @app.route("/")
@@ -65,7 +81,7 @@ def create_post():
     post_current_id += 1
     post = {
         "id": post_current_id,
-        "upvotes": 0,
+        "upvotes": 1,
         "title": title,
         "link": link,
         "username": username,
@@ -102,10 +118,14 @@ def get_comments(post_id):
     """
     Get comments for a specific post
     """
-    post = posts.get(post_id)
-    if post is None:
+    # check if post exists
+    if post_id not in posts:
         return json.dumps({"error": "Post not found"}), 404
-    res = {"comments": list(post.get("comments").values())}
+    
+    # filter comments by post_id
+    comments_list = comments.values()
+    filtered_comments = list(filter(lambda c: c["post_id"] == post_id, comments_list))
+    res = {"comments": filtered_comments}
     return json.dumps(res), 200
 
 
@@ -115,8 +135,9 @@ def post_comment(post_id):
     Post a comment for a specific post
     """
     global comment_current_id
-    post = posts.get(post_id)
-    if post is None:
+    
+    # check if post exists
+    if post_id not in posts:
         return json.dumps({"error": "Post not found"}), 404
 
     body = json.loads(request.data)
@@ -128,11 +149,12 @@ def post_comment(post_id):
     comment_current_id += 1
     comment = {
         "id": comment_current_id,
+        "post_id": post_id,
         "upvotes": 1,
         "text": text,
         "username": username,
     }
-    post["comments"][comment_current_id] = comment
+    comments[comment_current_id] = comment
     return json.dumps(comment), 201
 
 
@@ -141,11 +163,11 @@ def edit_comment(post_id, comment_id):
     """
     Edit a comment for a specific post
     """
-    post = posts.get(post_id)
-    if post is None:
+    # check if post exists
+    if post_id not in posts:
         return json.dumps({"error": "Post not found"}), 404
 
-    comment = post.get("comments").get(comment_id)
+    comment = comments.get(comment_id)
     if comment is None:
         return json.dumps({"error": "Comment not found"}), 404
 

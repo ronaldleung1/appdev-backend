@@ -51,12 +51,7 @@ post_current_id = 1
 comment_current_id = 2
 
 
-@app.route("/")
-def hello_world():
-    return "Hello world!"
-
-
-@app.route("/api/posts", methods=["GET"])
+@app.route("/api/posts/", methods=["GET"])
 def get_posts():
     """
     Get all posts
@@ -65,7 +60,7 @@ def get_posts():
     return json.dumps(res), 200
 
 
-@app.route("/api/posts", methods=["POST"])
+@app.route("/api/posts/", methods=["POST"])
 def create_post():
     """
     Create a post
@@ -113,7 +108,7 @@ def delete_post(post_id):
     return json.dumps(post), 200
 
 
-@app.route("/api/posts/<int:post_id>/comments", methods=["GET"])
+@app.route("/api/posts/<int:post_id>/comments/", methods=["GET"])
 def get_comments(post_id):
     """
     Get comments for a specific post
@@ -125,11 +120,18 @@ def get_comments(post_id):
     # filter comments by post_id
     comments_list = comments.values()
     filtered_comments = list(filter(lambda c: c["post_id"] == post_id, comments_list))
-    res = {"comments": filtered_comments}
+    res = {"comments": []}
+    for comment in filtered_comments:
+        res["comments"].append({
+            "id": comment["id"],
+            "upvotes": comment["upvotes"],
+            "text": comment["text"],
+            "username": comment["username"]
+        })
     return json.dumps(res), 200
 
 
-@app.route("/api/posts/<int:post_id>/comments", methods=["POST"])
+@app.route("/api/posts/<int:post_id>/comments/", methods=["POST"])
 def post_comment(post_id):
     """
     Post a comment for a specific post
@@ -155,10 +157,15 @@ def post_comment(post_id):
         "username": username,
     }
     comments[comment_current_id] = comment
-    return json.dumps(comment), 201
+    return json.dumps({
+        "id": comment_current_id,
+        "upvotes": 1,
+        "text": text,
+        "username": username
+    })
 
 
-@app.route("/api/posts/<int:post_id>/comments/<int:comment_id>", methods=["PUT"])
+@app.route("/api/posts/<int:post_id>/comments/<int:comment_id>/", methods=["PUT"])
 def edit_comment(post_id, comment_id):
     """
     Edit a comment for a specific post
@@ -176,7 +183,12 @@ def edit_comment(post_id, comment_id):
     if text is None:
         return json.dumps({"error": "Bad Request"}), 400
     comment["text"] = text
-    return json.dumps(comment), 200
+    return json.dumps({
+        "id": comment_id,
+        "upvotes": comment["upvotes"],
+        "text": text,
+        "username": comment["username"]
+    }), 200
 
 
 if __name__ == "__main__":

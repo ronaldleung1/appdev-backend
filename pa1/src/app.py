@@ -116,18 +116,20 @@ def get_comments(post_id):
     # check if post exists
     if post_id not in posts:
         return json.dumps({"error": "Post not found"}), 404
-    
+
     # filter comments by post_id
     comments_list = comments.values()
     filtered_comments = list(filter(lambda c: c["post_id"] == post_id, comments_list))
     res = {"comments": []}
     for comment in filtered_comments:
-        res["comments"].append({
-            "id": comment["id"],
-            "upvotes": comment["upvotes"],
-            "text": comment["text"],
-            "username": comment["username"]
-        })
+        res["comments"].append(
+            {
+                "id": comment["id"],
+                "upvotes": comment["upvotes"],
+                "text": comment["text"],
+                "username": comment["username"],
+            }
+        )
     return json.dumps(res), 200
 
 
@@ -137,7 +139,7 @@ def post_comment(post_id):
     Post a comment for a specific post
     """
     global comment_current_id
-    
+
     # check if post exists
     if post_id not in posts:
         return json.dumps({"error": "Post not found"}), 404
@@ -157,15 +159,15 @@ def post_comment(post_id):
         "username": username,
     }
     comments[comment_current_id] = comment
-    return json.dumps({
-        "id": comment_current_id,
-        "upvotes": 1,
-        "text": text,
-        "username": username
-    })
+    return (
+        json.dumps(
+            {"id": comment_current_id, "upvotes": 1, "text": text, "username": username}
+        ),
+        201,
+    )
 
 
-@app.route("/api/posts/<int:post_id>/comments/<int:comment_id>/", methods=["PUT"])
+@app.route("/api/posts/<int:post_id>/comments/<int:comment_id>/", methods=["POST"])
 def edit_comment(post_id, comment_id):
     """
     Edit a comment for a specific post
@@ -183,13 +185,18 @@ def edit_comment(post_id, comment_id):
     if text is None:
         return json.dumps({"error": "Bad Request"}), 400
     comment["text"] = text
-    return json.dumps({
-        "id": comment_id,
-        "upvotes": comment["upvotes"],
-        "text": text,
-        "username": comment["username"]
-    }), 200
+    return (
+        json.dumps(
+            {
+                "id": comment_id,
+                "upvotes": comment["upvotes"],
+                "text": text,
+                "username": comment["username"],
+            }
+        ),
+        200,
+    )
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

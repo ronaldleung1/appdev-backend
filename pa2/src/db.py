@@ -110,6 +110,32 @@ class DatabaseDriver(object):
         )
         self.conn.commit()
 
+    def send_money(self, sender_id, receiver_id, amount):
+        """
+        Using SQL, completes a transaction between the sender and receiver
+        """
+
+        # subtract from balance of sender
+        self.conn.execute(
+            """
+            UPDATE user
+            SET balance = balance - ?
+            WHERE id = ?;
+            """,
+            (amount, sender_id)
+        )
+
+        # add to balance of receiver
+        self.conn.execute(
+            """
+            UPDATE user
+            SET balance = balance + ?
+            WHERE id = ?;
+            """,
+            (amount, receiver_id)
+        )
+        self.conn.commit()
+
 
 # Only <=1 instance of the database driver
 # exists within the app at all times

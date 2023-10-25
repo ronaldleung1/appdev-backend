@@ -38,7 +38,43 @@ def create_user():
     return json.dumps(user), 201
 
 
+@app.route("/api/users/<int:user_id>", methods=["GET"])
+def get_user(user_id):
+    """
+    Endpoint for getting a user
+    """
+    
+    user = DB.get_user_by_id(user_id)
+    if user is None:
+        return json.dumps({"error": "User not found"}), 404
+    return json.dumps(user), 200
 
 
+@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    """
+    Endpoint for deleting a user
+    """
+    
+    user = DB.get_user_by_id(user_id)
+    if user is None:
+        return json.dumps({"error": "User not found"}), 404
+    
+    DB.delete_user_by_id(user_id)
+    return json.dumps(user), 200
+
+# @app.route("/api/send/", methods=["POST"])
+# def send_money():
+#   """
+#   Endpoint for sending money between users
+#   """
+#   body = json.loads(request.data)
+#   sender_id = body.get("sender_id")
+#   receiver_id = body.get("receiver_id")
+#   amount = body.get("amount")
+#   return 
+  
+  
+  
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

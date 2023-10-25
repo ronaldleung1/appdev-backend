@@ -25,7 +25,7 @@ class DatabaseDriver(object):
             "venmo.db", check_same_thread=False
         )
 
-        self.delete_user_table()
+        # self.delete_user_table()
         self.create_user_table()
 
 
@@ -95,6 +95,20 @@ class DatabaseDriver(object):
             })
 
         return None
+
+    def delete_user_by_id(self, id):
+        """
+        Using SQL, deletes a user by id
+        """
+        
+        self.conn.execute(
+          """
+          DELETE FROM user
+          WHERE id = ?;
+          """,
+          (id,)
+        )
+        self.conn.commit()
 
 
 # Only <=1 instance of the database driver

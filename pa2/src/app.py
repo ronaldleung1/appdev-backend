@@ -38,7 +38,7 @@ def create_user():
     return json.dumps(user), 201
 
 
-@app.route("/api/users/<int:user_id>", methods=["GET"])
+@app.route("/api/users/<int:user_id>/", methods=["GET"])
 def get_user(user_id):
     """
     Endpoint for getting a user
@@ -50,7 +50,7 @@ def get_user(user_id):
     return json.dumps(user), 200
 
 
-@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+@app.route("/api/users/<int:user_id>/", methods=["DELETE"])
 def delete_user(user_id):
     """
     Endpoint for deleting a user
@@ -72,22 +72,25 @@ def send_money():
     sender_id = body.get("sender_id")
     receiver_id = body.get("receiver_id")
     amount = body.get("amount")
-    
-    sender = DB.get_user_by_id(sender_id)
-    receiver = DB.get_user_by_id(receiver_id)
-    if sender is None or receiver is None:
-        return json.dumps({"error": "Sender not found"}), 404
-    
-    if amount > sender["balance"]:
-        return json.dumps({"error": "Sender does not have enough money"}), 400
 
-    DB.send_money(sender_id, receiver_id, amount)
+    if sender_id is not None and receiver_id is not None and amount is not None:
+        sender = DB.get_user_by_id(sender_id)
+        receiver = DB.get_user_by_id(receiver_id)
+        if sender is None or receiver is None:
+            return json.dumps({"error": "Sender not found"}), 404
+        
+        if amount > sender["balance"]:
+            return json.dumps({"error": "Sender does not have enough money"}), 400
     
-    return json.dumps({
-        "sender_id": sender_id,
-        "receiver_id": receiver_id,
-        "amount": amount
-    }), 200
+        DB.send_money(sender_id, receiver_id, amount)
+        
+        return json.dumps({
+            "sender_id": sender_id,
+            "receiver_id": receiver_id,
+            "amount": amount
+        }), 200
+    
+    return json.dumps({"error": "Insufficient or incorrect arguments provided"}), 400
   
   
   

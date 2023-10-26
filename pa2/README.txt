@@ -1,4 +1,4 @@
-Name:
-NetID:
+Name: Ronald Leung, Ethan Huang
+NetID: rfl68, ejh249
 
-Challenges Attempted: Tier (I/II/III)
+Challenges Attempted: N/A

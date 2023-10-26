@@ -1,6 +1,7 @@
 import os
 import sqlite3
 
+
 # From: https://goo.gl/YzypOI
 def singleton(cls):
     instances = {}
@@ -20,14 +21,10 @@ class DatabaseDriver(object):
     """
 
     def __init__(self):
-                
-        self.conn = sqlite3.connect(
-            "venmo.db", check_same_thread=False
-        )
+        self.conn = sqlite3.connect("venmo.db", check_same_thread=False)
 
-        # self.delete_user_table()
+        self.delete_user_table()
         self.create_user_table()
-
 
     def create_user_table(self):
         """
@@ -40,14 +37,14 @@ class DatabaseDriver(object):
                 CREATE TABLE user (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
-                    username BOOLEAN NOT NULL,
+                    username TEXT NOT NULL,
                     balance INTEGER NOT NULL
                 );
                 """
             )
         except Exception as e:
             print(e)
-    
+
     def delete_user_table(self):
         """
         Using SQL, deletes user table
@@ -63,23 +60,22 @@ class DatabaseDriver(object):
         users = []
 
         for row in cursor:
-            users.append({
-                "id": row[0],
-                "name": row[1],
-                "username": bool(row[2])
-            })
-        
+            users.append({"id": row[0], "name": row[1], "username": row[2]})
+
         return users
-    
+
     def insert_user_table(self, name, username, balance=0):
         """
         Using SQL, adds a new user in the user table
         """
-        cursor = self.conn.execute("INSERT INTO user (name, username, balance) VALUES (?, ?, ?);", (name, username, balance))
+        cursor = self.conn.execute(
+            "INSERT INTO user (name, username, balance) VALUES (?, ?, ?);",
+            (name, username, balance),
+        )
         self.conn.commit()
 
         return cursor.lastrowid
-    
+
     def get_user_by_id(self, id):
         """
         Using SQL, get a user by ID
@@ -87,12 +83,12 @@ class DatabaseDriver(object):
         cursor = self.conn.execute("SELECT * FROM user WHERE ID = ?;", (id,))
 
         for row in cursor:
-            return({
+            return {
                 "id": row[0],
                 "name": row[1],
-                "username": bool(row[2]),
-                "balance": int(row[3])
-            })
+                "username": row[2],
+                "balance": int(row[3]),
+            }
 
         return None
 
@@ -100,13 +96,13 @@ class DatabaseDriver(object):
         """
         Using SQL, deletes a user by id
         """
-        
+
         self.conn.execute(
-          """
+            """
           DELETE FROM user
           WHERE id = ?;
           """,
-          (id,)
+            (id,),
         )
         self.conn.commit()
 
@@ -122,7 +118,7 @@ class DatabaseDriver(object):
             SET balance = balance - ?
             WHERE id = ?;
             """,
-            (amount, sender_id)
+            (amount, sender_id),
         )
 
         # add to balance of receiver
@@ -132,7 +128,7 @@ class DatabaseDriver(object):
             SET balance = balance + ?
             WHERE id = ?;
             """,
-            (amount, receiver_id)
+            (amount, receiver_id),
         )
         self.conn.commit()
 

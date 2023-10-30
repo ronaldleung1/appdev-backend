@@ -12,7 +12,8 @@ def hello_world():
     return "Hello world!"
 
 
-# your routes here
+### USERS
+
 @app.route("/api/users/", methods=["GET"])
 def get_users():
     """
@@ -95,6 +96,9 @@ def send_money():
         )
 
     return json.dumps({"error": "Insufficient or incorrect arguments provided"}), 400
+
+
+    ### TRANSACTIONS
 
 
 if __name__ == "__main__":

@@ -25,6 +25,10 @@ class DatabaseDriver(object):
 
         self.delete_user_table()
         self.create_user_table()
+        self.delete_transactions_table()
+        self.create_transactions_table()
+
+    ### USERS
 
     def create_user_table(self):
         """
@@ -44,7 +48,7 @@ class DatabaseDriver(object):
             )
         except Exception as e:
             print(e)
-
+    
     def delete_user_table(self):
         """
         Using SQL, deletes user table
@@ -131,6 +135,37 @@ class DatabaseDriver(object):
             (amount, receiver_id),
         )
         self.conn.commit()
+
+
+    ### TRANSACTIONS
+
+    def create_transactions_table(self):
+        """
+        Using SQL, creates transactions table
+        """
+
+        try:
+            self.conn.execute("""
+                CREATE TABLE transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP NOT NULL,
+                    amount INTEGER NOT NULL,
+                    accepted BOOL,
+                    sender_id INTEGER NOT NULL,
+                    FOREIGN KEY(sender_id) REFERENCES user(id),
+                    receiver_id INTEGER NOT NULL,
+                    FOREIGN KEY(receiver_id) REFERENCES user(id)
+                );
+            """)
+        except Exception as e:
+            print(e)
+
+    def delete_transactions_table(self):
+        """
+        Using SQL, deletes transactions table
+        """
+
+        self.conn.execute("DROP TABLE IF EXISTS transactions;")
 
 
 # Only <=1 instance of the database driver

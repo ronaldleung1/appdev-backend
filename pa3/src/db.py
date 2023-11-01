@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import time
 
 
 # From: https://goo.gl/YzypOI
@@ -22,7 +23,7 @@ class DatabaseDriver(object):
 
     def __init__(self):
         self.conn = sqlite3.connect("venmo.db", check_same_thread=False)
-
+        self.conn.execute("PRAGMA foreign_keys = 1")
         self.delete_user_table()
         self.create_user_table()
         self.delete_transactions_table()
@@ -38,7 +39,7 @@ class DatabaseDriver(object):
         try:
             self.conn.execute(
                 """
-                CREATE TABLE user (
+                CREATE TABLE IF NOT EXISTS user (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     username TEXT NOT NULL,
@@ -92,6 +93,7 @@ class DatabaseDriver(object):
                 "name": row[1],
                 "username": row[2],
                 "balance": int(row[3]),
+                "transactions": self.get_transactions_of_user(id)
             }
 
         return None
@@ -103,13 +105,61 @@ class DatabaseDriver(object):
 
         self.conn.execute(
             """
-          DELETE FROM user
-          WHERE id = ?;
-          """,
+            DELETE FROM user
+            WHERE id = ?;
+            """,
             (id,),
         )
         self.conn.commit()
 
+
+    ### TRANSACTIONS
+
+    def create_transactions_table(self):
+        """
+        Using SQL, creates transactions table
+        """
+
+        try:
+            print("Attempt to create transactions table")
+            self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP NOT NULL,
+                    sender_id INTEGER NOT NULL,
+                    receiver_id INTEGER NOT NULL,
+                    FOREIGN KEY(sender_id) REFERENCES user(id),
+                    FOREIGN KEY(receiver_id) REFERENCES user(id),
+                    amount INTEGER NOT NULL,
+                    accepted BOOL
+                );
+                """
+            )
+            print("THIS WORKED")
+        except Exception as e:
+            print(e)
+
+    
+    def delete_transactions_table(self):
+        """
+        Using SQL, deletes transactions table
+        """
+
+        self.conn.execute("DROP TABLE IF EXISTS transactions;")
+    
+    def get_transactions_of_user(self, user_id):
+        cursor = self.conn.execute(
+            "SELECT * FROM transactions WHERE sender_id = ? OR receiver_id = ?", (user_id, user_id),
+        )
+        transactions = []
+
+        for row in cursor:
+            transactions.append({"id": row[0], "timestamp": row[1], "sender_id": int(row[2]), "receiver_id": int(row[3]), "amount": int(row[4]), "accepted": bool(row[5])})
+
+        return transactions
+    
+    
     def send_money(self, sender_id, receiver_id, amount):
         """
         Using SQL, completes a transaction between the sender and receiver
@@ -134,38 +184,18 @@ class DatabaseDriver(object):
             """,
             (amount, receiver_id),
         )
+
+        cursor = self.conn.cusor()
+        cursor.execute(
+            """
+            INSERT INTO transactions 
+            (timestamp, sender_id, receiver_id, amount, accepted) 
+            VALUES (?, ?, ?)
+            """,
+            (time.time(), sender_id, receiver_id, amount, False),
+        )
         self.conn.commit()
-
-
-    ### TRANSACTIONS
-
-    def create_transactions_table(self):
-        """
-        Using SQL, creates transactions table
-        """
-
-        try:
-            self.conn.execute("""
-                CREATE TABLE transactions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    timestamp TIMESTAMP NOT NULL,
-                    amount INTEGER NOT NULL,
-                    accepted BOOL,
-                    sender_id INTEGER NOT NULL,
-                    FOREIGN KEY(sender_id) REFERENCES user(id),
-                    receiver_id INTEGER NOT NULL,
-                    FOREIGN KEY(receiver_id) REFERENCES user(id)
-                );
-            """)
-        except Exception as e:
-            print(e)
-
-    def delete_transactions_table(self):
-        """
-        Using SQL, deletes transactions table
-        """
-
-        self.conn.execute("DROP TABLE IF EXISTS transactions;")
+        return cursor.lastrowid
 
 
 # Only <=1 instance of the database driver

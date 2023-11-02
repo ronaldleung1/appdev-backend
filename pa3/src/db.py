@@ -13,7 +13,6 @@ def singleton(cls):
 
     return getinstance
 
-# TODO add comments for all methods
 
 class DatabaseDriver(object):
     """
@@ -35,7 +34,6 @@ class DatabaseDriver(object):
         """
         Using SQL, create user table
         """
-
         try:
             self.conn.execute(
                 """
@@ -49,15 +47,12 @@ class DatabaseDriver(object):
             )
         except Exception as e:
             print(e)
-    
 
     def delete_user_table(self):
         """
         Using SQL, deletes user table
         """
-
         self.conn.execute("DROP TABLE IF EXISTS user;")
-
 
     def get_all_users(self):
         """
@@ -71,7 +66,6 @@ class DatabaseDriver(object):
 
         return users
 
-
     def insert_user_table(self, name, username, balance=0):
         """
         Using SQL, adds a new user in the user table
@@ -83,7 +77,6 @@ class DatabaseDriver(object):
         self.conn.commit()
 
         return cursor.lastrowid
-
 
     def get_user_by_id(self, id):
         """
@@ -97,17 +90,15 @@ class DatabaseDriver(object):
                 "name": row[1],
                 "username": row[2],
                 "balance": int(row[3]),
-                "transactions": self.get_transactions_of_user(id)
+                "transactions": self.get_transactions_of_user(id),
             }
 
         return None
-
 
     def delete_user_by_id(self, id):
         """
         Using SQL, deletes a user by id
         """
-
         self.conn.execute(
             """
             DELETE FROM user
@@ -116,13 +107,11 @@ class DatabaseDriver(object):
             (id,),
         )
         self.conn.commit()
-    
 
     def send_money(self, sender_id, receiver_id, amount):
         """
         Using SQL, completes a transaction between the sender and receiver
         """
-
         # subtract from balance of sender
         self.conn.execute(
             """
@@ -144,14 +133,12 @@ class DatabaseDriver(object):
         )
         self.conn.commit()
 
-
     ### TRANSACTIONS
 
     def create_transactions_table(self):
         """
-        Using SQL, creates transactions table
+        Using SQL, create transactions table
         """
-
         try:
             self.conn.execute(
                 """
@@ -171,15 +158,15 @@ class DatabaseDriver(object):
         except Exception as e:
             print(e)
 
-    
     def delete_transactions_table(self):
         """
-        Using SQL, deletes transactions table
+        Using SQL, delete transactions table
         """
         self.conn.execute("DROP TABLE IF EXISTS transactions;")
-    
 
-    def insert_transaction_table(self, timestamp, sender_id, receiver_id, amount, message, accepted=False):
+    def insert_transaction_table(
+        self, timestamp, sender_id, receiver_id, amount, message, accepted=False
+    ):
         """
         Using SQL, insert a transaction into the table
         """
@@ -196,7 +183,6 @@ class DatabaseDriver(object):
 
         return cursor.lastrowid
 
-
     def get_transaction_by_id(self, id):
         """
         Using SQL, get a transaction by ID
@@ -211,28 +197,33 @@ class DatabaseDriver(object):
                 "receiver_id": int(row[3]),
                 "amount": int(row[4]),
                 "message": row[5],
-                "accepted": row[6]
+                "accepted": row[6],
             }
 
         return None
-    
 
     def get_transactions_of_user(self, user_id):
+        """
+        Using SQL, get all transactions of a user
+        """
         cursor = self.conn.execute(
-            "SELECT * FROM transactions WHERE sender_id = ? OR receiver_id = ?", (user_id, user_id),
+            "SELECT * FROM transactions WHERE sender_id = ? OR receiver_id = ?",
+            (user_id, user_id),
         )
         transactions = []
 
         for row in cursor:
-            transactions.append({
-                "id": int(row[0]),
-                "timestamp": row[1],
-                "sender_id": int(row[2]),
-                "receiver_id": int(row[3]),
-                "amount": int(row[4]),
-                "message": row[5],
-                "accepted": row[6]
-            })
+            transactions.append(
+                {
+                    "id": int(row[0]),
+                    "timestamp": row[1],
+                    "sender_id": int(row[2]),
+                    "receiver_id": int(row[3]),
+                    "amount": int(row[4]),
+                    "message": row[5],
+                    "accepted": row[6],
+                }
+            )
 
         return transactions
 
@@ -251,6 +242,7 @@ class DatabaseDriver(object):
         self.conn.commit()
 
         return cursor.lastrowid
+
 
 # Only <=1 instance of the database driver
 # exists within the app at all times

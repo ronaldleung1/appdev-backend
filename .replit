@@ -1,11 +1,11 @@
 modules = ["python-3.10:v18-20230807-322e88b"]
 
 hidden = [".pythonlibs"]
-run = "cd pa2/src; python3 app.py"
+run = "cd pa4/src; python3 app.py"
 
 [nix]
 channel = "stable-23_05"
 
 [deployment]
-run = ["sh", "-c", "cd pa2/src; python3 app.py"]
+run = ["sh", "-c", "cd pa4/src; python3 app.py"]
 deploymentTarget = "cloudrun"

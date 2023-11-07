@@ -2,6 +2,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+association_table = db.Table(
+  "assocation",
+  db.Model.metadata,
+  db.Column("task_id", db.Integer, db.ForeignKey("task.id")),
+  db.Column("category_id", db.Integer, db.ForeignKey("category.id"))
+)
 
 class Task(db.Model):
   """
@@ -11,6 +17,8 @@ class Task(db.Model):
   id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   description = db.Column(db.String, nullable=False)
   done = db.Column(db.Boolean, nullable=False)
+  subtasks = db.relationship("Subtask", cascade="delete")
+  categories = db.relationship("Category", secondary=association_table, back_populates="tasks")
 
   def __init__(self, **kwargs):
     """
@@ -26,7 +34,9 @@ class Task(db.Model):
     return {
       "id": self.id,
       "description": self.description,
-      "done": self.done
+      "done": self.done,
+      "subtasks": [s.serialize() for s in self.subtasks],
+      "categories": [c.simple_serialize() for c in self.categories]
     }
 
 class Subtask(db.Model):
@@ -35,7 +45,7 @@ class Subtask(db.Model):
   """
   __tablename__ = "subtask"
   id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-  description = db.Column(db.String, nonlocalble=False)
+  description = db.Column(db.String, nullable=False)
   done = db.Column(db.Boolean, nullable=False)
   task_id = db.Column(db.Integer, db.ForeignKey("task.id"), nullable=False)
 
@@ -54,4 +64,44 @@ class Subtask(db.Model):
       "done": self.done,
       "task_id": self.task_id
     }
+
+class Category(db.Model):
+  """
+  Category Model
+  """
+
+  __tablename__ = "category"
+  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+  description = db.Column(db.String, nullable=False)
+  color = db.Column(db.String, nullable=False)
+  tasks = db.relationship("Task", secondary=association_table, back_populates="categories")
+
+  def __init__(self, **kwargs):
+    """
+    Initialize a category object
+    """
+    self.description = kwargs.get("description", "")
+    self.color = kwargs.get("color")
+  
+  def serialize(self):
+    """
+    Serialize a category object
+    """
+    return {
+      "id": self.id,
+      "description": self.description,
+      "color": self.color,
+      "tasks": [t.serialize() for t in self.tasks],
+    }
+  
+  def simple_serialize(self):
+    """
+    Serialize a category object without the tasks field
+    """
+    return {
+      "id": self.id,
+      "description": self.description,
+      "color": self.color,
+    }
+    
 # implement database model classes

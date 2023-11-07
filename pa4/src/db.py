@@ -33,7 +33,7 @@ class Course(db.Model):
         Initializes a new Course object.
         """
         self.code = kwargs.get("code", "")
-        self.code = kwargs.get("name", "")
+        self.name = kwargs.get("name", "")
 
     def serialize(self):
         """
@@ -96,7 +96,7 @@ class User(db.Model):
 
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    net_id = db.Column(db.String, nullable=False)
+    netid = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
     courses = db.relationship(
         "Course", secondary=association_table, back_populates="instructors"
@@ -109,7 +109,7 @@ class User(db.Model):
         """
         Initializes a User Object
         """
-        self.netid = kwargs.get("type", "")
+        self.netid = kwargs.get("netid", "")
         self.name = kwargs.get("name", "")
 
     def serialize(self):

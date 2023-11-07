@@ -2,8 +2,7 @@ import json
 
 from db import db
 from flask import Flask, request
-from db import Course
-from db import Assignment
+from db import Course, User, Assignment
 
 app = Flask(__name__)
 db_filename = "cms.db"

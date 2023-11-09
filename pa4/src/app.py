@@ -9,7 +9,7 @@ db_filename = "cms.db"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ECHO"] = True
+app.config["SQLALCHEMY_ECHO"] = False # TODO change back to True
 
 db.init_app(app)
 with app.app_context():
@@ -93,13 +93,16 @@ def create_user():
     Endpoint for creating a user
     """
     body = json.loads(request.data)
-    new_user = User(
-        name=body.get("name"),
-        netid=body.get("netid"),
-    )
+    name = body.get("name")
+    netid = body.get("netid")
+    new_user = User(name=name, netid=netid)
+
+    if name is None or netid is None:
+        return failure_response("Name or netid not provided", 400)
+    
     db.session.add(new_user)
     db.session.commit()
-    return success_response(new_user.serialize())
+    return success_response(new_user.serialize(), 201)
 
 
 @app.route("/api/users/<int:user_id>/", methods=["GET"])
@@ -124,14 +127,14 @@ def add_user(course_id):
         return failure_response("Course not found")
     body = json.loads(request.data)
     user_id = body.get("user_id")
-    type = body.get("type")
+    user_type = body.get("type")
 
     user = User.query.filter_by(id=user_id.first())
     if user is None:
         return failure_response("User not found")
-    if type == "student":
+    if user_type == "student":
         course.students.append(user)
-    if type == "instructor":
+    if user_type == "instructor":
         course.instructors.append(user)
     db.sesson.commit()
     return success_response(course.serialize())

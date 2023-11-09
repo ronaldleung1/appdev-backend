@@ -129,14 +129,15 @@ def add_user(course_id):
     user_id = body.get("user_id")
     user_type = body.get("type")
 
-    user = User.query.filter_by(id=user_id.first())
+    user = User.query.filter_by(id=user_id).first()
     if user is None:
         return failure_response("User not found")
     if user_type == "student":
         course.students.append(user)
     if user_type == "instructor":
         course.instructors.append(user)
-    db.sesson.commit()
+    print("OK PLEASE WORK")
+    db.session.commit()
     return success_response(course.serialize())
 
 

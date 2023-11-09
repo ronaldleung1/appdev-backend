@@ -98,10 +98,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     netid = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
-    courses = db.relationship(
+    student_courses = db.relationship(
         "Course", secondary=association_table, back_populates="instructors"
     )
-    courses1 = db.relationship(
+    instructor_courses = db.relationship(
         "Course", secondary=association_table, back_populates="students"
     )
 
@@ -120,6 +120,5 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "netid": self.netid,
-            "courses": [c.simple_serialize() for c in self.courses]
-            + [d.simple_serialize() for d in self.courses1],
+            "courses": [c.simple_serialize() for c in self.student_courses] + [d.simple_serialize() for d in self.instructor_courses],
         }

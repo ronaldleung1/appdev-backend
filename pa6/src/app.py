@@ -3,6 +3,7 @@ import json
 from db import db
 from flask import Flask, request
 from db import Course
+import os
 
 app = Flask(__name__)
 db_filename = "cms.db"
@@ -17,6 +18,13 @@ with app.app_context():
 
 
 # your routes here
+@app.route("/")
+def get_netid():
+    """
+    Endpoint for getting NetID environment variable
+    """
+    return f"{os.environ['NETID']} was here!"
+
 @app.route("/api/courses/", methods=["GET"])
 def get_courses():
     """

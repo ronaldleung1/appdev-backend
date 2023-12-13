@@ -4,4 +4,4 @@ services:
   demo:
     image: "ronaldleung/cms:latest"
     ports:
-      - "5000:5000"
+      - "8000:8000"
